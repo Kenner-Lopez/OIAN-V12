@@ -1,0 +1,599 @@
+
+import streamlit as st
+import re
+import random
+import time
+import unicodedata
+import datetime
+import hashlib
+
+
+
+# ==============================================================================
+# 1. CONFIGURACIÓN DEL SISTEMA Y DISEÑO VISUAL (UI/UX)
+# ==============================================================================
+st.set_page_config(
+    page_title="OIAN OMNISCIENT V12",
+    page_icon="👁️",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
+# INYECCIÓN DE ESTILOS CSS (DISEÑO V8 - CLARO Y POTENTE)
+st.markdown("""
+    <style>
+    /* 1. ANIMACIÓN DE PULSO PARA AMENAZAS CRÍTICAS (Latido de Alerta) */
+    @keyframes pulse-red {
+        0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7); }
+        70% { box-shadow: 0 0 0 20px rgba(220, 38, 38, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
+    }
+
+    /* 2. TARJETAS DE ESTADO (Diseño que te gustó) */
+    
+    /* CRÍTICO: Fondo rojo oscuro, borde rojo brillante, animado */
+    .threat-box-critical {
+        background-color: #450a0a;
+        border: 3px solid #dc2626;
+        padding: 25px;
+        border-radius: 15px;
+        color: #ffffff;
+        margin-bottom: 25px;
+        animation: pulse-red 2s infinite;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+    }
+    
+    /* ADVERTENCIA: Fondo ámbar oscuro, borde naranja */
+    .threat-box-warning {
+        background-color: #422006;
+        border: 3px solid #f59e0b;
+        padding: 25px;
+        border-radius: 15px;
+        color: #ffffff;
+        margin-bottom: 25px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+    }
+    
+    /* SEGURO: Fondo verde bosque, borde esmeralda */
+    .safe-box {
+        background-color: #064e3b;
+        border: 3px solid #10b981;
+        padding: 25px;
+        border-radius: 15px;
+        color: #ffffff;
+        margin-bottom: 25px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+    }
+    
+    /* SOCIAL: Fondo azul noche, borde azul cielo */
+    .social-box {
+        background-color: #1e3a8a;
+        border: 3px solid #3b82f6;
+        padding: 25px;
+        border-radius: 15px;
+        color: #ffffff;
+        margin-bottom: 25px;
+    }
+    
+    /* SISTEMA: Fondo púrpura (Aprendizaje) */
+    .system-box {
+        background-color: #4c1d95;
+        border: 3px solid #8b5cf6;
+        padding: 20px;
+        border-radius: 15px;
+        color: #ffffff;
+        margin-bottom: 25px;
+        border-style: dashed;
+    }
+
+    /* 3. TIPOGRAFÍA INTERNA */
+    h2.card-title {
+        margin-top: 0;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        border-bottom: 1px solid rgba(255,255,255,0.2);
+        padding-bottom: 10px;
+        margin-bottom: 15px;
+    }
+    
+    p.card-text {
+        font-size: 16px;
+        line-height: 1.6;
+    }
+    
+    .highlight-threat {
+        background-color: rgba(255, 0, 0, 0.3);
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-weight: bold;
+        color: #ffcccc;
+    }
+
+    /* 4. PERSONALIZACIÓN DEL CHAT */
+    .stTextInput input {
+        border-radius: 10px;
+        border: 2px solid #555;
+        padding: 10px;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+# ==============================================================================
+# 2. NÚCLEO DE MEMORIA DINÁMICA (CEREBRO EVOLUTIVO)
+# ==============================================================================
+class MemoryCore:
+    """
+    Gestiona la persistencia de datos: Identidad del usuario y Aprendizaje de nuevas reglas.
+    """
+    def __init__(self):
+        # Memoria de Identidad (Quién eres)
+        self.user_name = None
+        self.user_trust_level = 50 # Nivel de confianza inicial
+        
+        # Memoria de Conocimiento (Qué ha aprendido)
+        self.learned_knowledge = {} 
+        
+        # Estadísticas de la sesión
+        self.scams_stopped = 0
+        self.interactions = 0
+
+    def set_identity(self, name):
+        """Registra el nombre del usuario y mejora la personalización."""
+        self.user_name = name.strip().capitalize()
+        
+    def get_greeting_context(self):
+        """Genera un saludo dinámico basado en si conoce al usuario."""
+        hour = datetime.datetime.now().hour
+        time_greeting = "Buenos días" if 5 <= hour < 12 else "Buenas tardes" if 12 <= hour < 19 else "Buenas noches"
+        
+        if self.user_name:
+            return f"{time_greeting}, {self.user_name}."
+        else:
+            return f"{time_greeting}, Usuario."
+
+    def learn_new_threat(self, phrase, reason):
+        """
+        Permite a la IA reprogramarse a sí misma añadiendo nuevas reglas regex
+        basadas en la enseñanza del usuario.
+        """
+        # Limpiamos la frase para usarla como ID
+        rule_id = f"USER_RULE_{hashlib.md5(phrase.encode()).hexdigest()[:8]}"
+        
+        # Creamos una entrada de base de datos completa
+        new_rule_structure = {
+            "regex": re.escape(phrase.lower()), # Convertimos texto a regex segura
+            "peso": 100, # Prioridad máxima porque el usuario lo ordenó
+            "cat": "AMENAZA APRENDIDA",
+            "desc": f"El usuario me enseñó explícitamente que '{phrase}' es peligroso.",
+            "consejo": f"Bloqueo activado por protocolo personalizado. Razón: {reason}"
+        }
+        
+        self.learned_knowledge[rule_id] = new_rule_structure
+        return True
+
+# ==============================================================================
+# 3. MOTOR DE PROCESAMIENTO LINGÜÍSTICO (NLP)
+# ==============================================================================
+class LinguisticEngine:
+    """
+    Se encarga de limpiar, normalizar y preparar el texto para que ningún hacker
+    pueda evadir los filtros usando trucos de escritura.
+    """
+    def __init__(self):
+        # Diccionario masivo de Leetspeak (Hacker -> Español)
+        self.leetspeak_map = {
+            '0': 'o', '1': 'i', '3': 'e', '4': 'a', '5': 's', '6': 'g',
+            '7': 't', '8': 'b', '9': 'g', '@': 'a', '$': 's', '!': 'i', 
+            '+': 't', 'vv': 'w', 'ph': 'f', 'k': 'c', 'z': 's', 'x': 'por',
+            '[': 'c', ']': 'c', '(': 'c', ')': 'c'
+        }
+        
+        # Bloqueo de idioma Inglés
+        self.english_triggers = [
+            "the", "and", "you", "money", "please", "transfer", "bank", 
+            "account", "kindly", "hello", "business", "investment", "sir", 
+            "madam", "refund", "support", "team", "urgent", "reply"
+        ]
+
+    def normalize_deeply(self, text):
+        """
+        Transforma "H0l4 k1er0 d1n3r0" -> "hola quiero dinero"
+        """
+        # 1. Minúsculas
+        text = text.lower()
+        
+        # 2. Eliminación de acentos (NFD normalization)
+        text = ''.join(c for c in unicodedata.normalize('NFD', text) if unicodedata.category(c) != 'Mn')
+        
+        # 3. Decodificación de Leetspeak caracter por caracter
+        decoded_text = ""
+        for char in text:
+            decoded_text += self.leetspeak_map.get(char, char)
+            
+        # 4. Limpieza de caracteres no alfanuméricos (mantiene espacios)
+        clean_text = re.sub(r'[^a-z0-9\s]', ' ', decoded_text)
+        
+        # 5. Colapso de espacios múltiples
+        return " ".join(clean_text.split())
+
+    def is_english(self, text):
+        """Detecta si el texto está mayoritariamente en inglés."""
+        words = text.lower().split()
+        if not words: return False
+        
+        matches = sum(1 for w in words if w in self.english_triggers)
+        ratio = matches / len(words)
+        
+        # Si más del 20% son palabras clave en inglés
+        return ratio > 0.20
+
+# ==============================================================================
+# 4. BASE DE DATOS DE AMENAZAS (EL CEREBRO ESTÁTICO)
+# ==============================================================================
+class ThreatRepository:
+    """
+    Contiene el conocimiento base "Militar" pre-programado.
+    Estas reglas son inmutables, pero se complementan con la memoria dinámica.
+    """
+    def __init__(self):
+        self.static_rules = {
+            # --- NIVEL 1: INTENCIÓN DE LUCRO (EL MÁS IMPORTANTE) ---
+            "INTENCION_DINERO": {
+                # Busca: Verbo de pedir ... (cualquier cosa) ... Dinero
+                "regex": r"(quiero|necesito|dame|manda|envia|deposita|presta|regala|sacar|pide|exige|quieren|piden|buscan|solicitan|pagar|cobrar|donar).{0,60}(dinero|plata|lana|pasta|billetes|cash|dolares|euros|sueldo|ahorros|pago|monto|cantidad|transferencia)",
+                "peso": 95,
+                "cat": "EXTORSIÓN FINANCIERA",
+                "desc": "El remitente está solicitando recursos económicos explícitamente.",
+                "consejo": "ALERTA MÁXIMA. No envíes dinero bajo ninguna circunstancia."
+            },
+            
+            # --- NIVEL 2: ROBO DE CREDENCIALES ---
+            "DATOS_SENSIBLES": {
+                "regex": r"(tarjeta|visa|mastercard|amex|cvv|pin|nip|cuenta bancaria|clabe|numero de cuenta|banco|plastico|vencimiento|digitos|contraseña|password|usuario)",
+                "peso": 85,
+                "cat": "ROBO DE DATOS",
+                "desc": "Solicitud de información bancaria o credenciales de acceso.",
+                "consejo": "Tu banco o servicios legítimos NUNCA piden estos datos por chat."
+            },
+            
+            # --- NIVEL 3: PLATAFORMAS DE MOVIMIENTO RÁPIDO ---
+            "PLATAFORMAS_PAGO": {
+                "regex": r"(spei|zelle|paypal|bizum|yape|plin|nequi|daviplata|cripto|bitcoin|usdt|binance|wallet|billetera|oxxo|western union|moneygram)",
+                "peso": 60,
+                "cat": "LAVADO / MOVIMIENTO",
+                "desc": "Mención de plataformas usadas por estafadores para mover dinero rápido.",
+                "consejo": "Verifica la identidad del receptor por voz antes de transferir."
+            },
+            
+            # --- NIVEL 4: INGENIERÍA SOCIAL (MIEDO/URGENCIA) ---
+            "TACTICAS_MIEDO": {
+                "regex": r"(policia|carcel|detenido|abogado|juzgado|demanda|embargo|multa|accidente|hospital|secuestro|urgente|emergencia|sangre|herido|muerte|peligro|patrulla)",
+                "peso": 90,
+                "cat": "PÁNICO Y COERCIÓN",
+                "desc": "Uso de palabras de alto impacto emocional para nublar tu juicio.",
+                "consejo": "Cuelga inmediatamente. Llama directamente a tu familiar."
+            },
+            
+            # --- NIVEL 5: CIBERSEGURIDAD (PHISHING) ---
+            "ENLACES_PELIGROSOS": {
+                "regex": r"(http|www|bit\.ly|tinyurl|\.com|\.net|link|enlace|clic|formulario|verificar|actualizar|reactivar|cancelar compra|rastrear|paquete|aduana)",
+                "peso": 75,
+                "cat": "PHISHING / MALWARE",
+                "desc": "Intento de redirección a sitios web fraudulentos.",
+                "consejo": "No hagas clic. Podrían robar tus cookies o infectar tu dispositivo."
+            },
+            
+            # --- NIVEL 6: ROBO DE CUENTA (WHATSAPP) ---
+            "SECUESTRO_WHATSAPP": {
+                "regex": r"(codigo|sms|whatsapp|6 digitos|verificacion|autenticacion|teamviewer|anydesk|soporte|asistencia|pantallazo|captura|compartir pantalla)",
+                "peso": 100,
+                "cat": "SECUESTRO DE CUENTA",
+                "desc": "Intento crítico de robo de cuenta de WhatsApp o acceso remoto.",
+                "consejo": "JAMÁS compartas el código SMS. Bloquea inmediatamente."
+            }
+        }
+
+# ==============================================================================
+# 5. OIAN OMNISCIENT BRAIN (EL CEREBRO CENTRAL QUE UNE TODO)
+# ==============================================================================
+class OianOmniscientBrain:
+    def __init__(self):
+        self.linguist = LinguisticEngine()
+        self.db = ThreatRepository()
+        
+        # Conexión con Session State para persistencia de memoria
+        if "memory_core" not in st.session_state:
+            st.session_state.memory_core = MemoryCore()
+        self.memory = st.session_state.memory_core
+
+    def _detect_commands(self, text):
+        """
+        Escanea el texto buscando comandos especiales del usuario antes de buscar amenazas.
+        Comandos: "Soy [Nombre]", "Aprende que [X] es estafa".
+        """
+        text_lower = text.lower()
+        
+        # 1. COMANDO: IDENTIDAD
+        match_identity = re.search(r"\b(me llamo|soy|mi nombre es)\s+([a-zA-ZáéíóúÁÉÍÓÚñÑ]+)", text_lower)
+        if match_identity:
+            name = match_identity.group(2)
+            self.memory.set_identity(name)
+            return {
+                "type": "IDENTITY",
+                "msg": f"Identidad confirmada. He actualizado mis protocolos para protegerte, **{self.memory.user_name}**."
+            }
+            
+        # 2. COMANDO: APRENDIZAJE
+        match_learn = re.search(r"\baprende que\s+(.+?)\s+es\s+(estafa|peligroso|malo|amenaza)", text_lower)
+        if match_learn:
+            phrase = match_learn.group(1).strip()
+            reason = "Instrucción directa del usuario"
+            self.memory.learn_new_threat(phrase, reason)
+            return {
+                "type": "LEARNING",
+                "msg": f"He reescrito mi código neuronal. Ahora detectaré **'{phrase}'** como una amenaza crítica.",
+                "sub_msg": "Gracias por contribuir a la base de datos de seguridad."
+            }
+            
+        return None
+
+    def analyze_message(self, input_text):
+        """
+        Proceso principal de análisis.
+        """
+        # Paso 0: Verificar comandos de sistema
+        command_result = self._detect_commands(input_text)
+        if command_result:
+            if command_result["type"] == "IDENTITY":
+                return {"status": "SOCIAL", "human_msg": command_result["msg"]}
+            elif command_result["type"] == "LEARNING":
+                return {"status": "SYSTEM", "system_msg": command_result["msg"], "sub_msg": command_result["sub_msg"]}
+
+        # Paso 1: Normalización Profunda
+        text_norm = self.linguist.normalize_deeply(input_text)
+        
+        # Paso 2: Filtro de Idioma
+        if self.linguist.is_english(input_text):
+            return {
+                "status": "ERROR_IDIOMA",
+                "msg": "He detectado idioma INGLÉS. Por protocolos de seguridad y precisión, solo analizo Español.",
+                "score": 0, "threats": []
+            }
+
+        # Paso 3: Construcción de Base de Datos Unificada (Estática + Aprendida)
+        active_rules = self.db.static_rules.copy()
+        # Fusionamos lo aprendido por la memoria
+        active_rules.update(self.memory.learned_knowledge)
+
+        # Paso 4: Escaneo Heurístico
+        total_risk_score = 0
+        detected_threats = []
+        detailed_report = []
+
+        for rule_id, rule_data in active_rules.items():
+            # Buscamos coincidencias
+            matches = re.findall(rule_data["regex"], text_norm)
+            count = len(matches)
+            
+            if count > 0:
+                # Cálculo de daño: Peso base + 10% por cada repetición
+                impact = rule_data["peso"] * (1 + (count * 0.1))
+                total_risk_score += impact
+                
+                detected_threats.append(rule_data["cat"])
+                detailed_report.append({
+                    "cat": rule_data["cat"],
+                    "desc": rule_data["desc"],
+                    "consejo": rule_data["consejo"]
+                })
+
+        # Normalizamos el score a máx 100
+        final_score = min(int(total_risk_score), 100)
+        
+        # Paso 5: Lógica Social y Contextual (Si no hay amenazas)
+        is_social = False
+        social_response = ""
+        
+        if final_score == 0:
+            if re.search(r"(hola|buenos dias|hey|que tal)", text_norm):
+                is_social = True
+                greeting = self.memory.get_greeting_context()
+                social_response = f"👋 **{greeting}** Mis sensores están operativos y esperando datos para analizar."
+            elif re.search(r"(gracias|ok|vale|listo|entendido)", text_norm):
+                is_social = True
+                name_ref = self.memory.user_name if self.memory.user_name else "camarada"
+                social_response = f"🛡️ A la orden, {name_ref}. La vigilancia es constante."
+            elif re.search(r"(hambre|comida|sueño|dormir|cansado|triste)", text_norm):
+                is_social = True
+                social_response = "🧠 **Nota Psicológica:** Los estafadores suelen atacar cuando detectan fatiga o vulnerabilidad emocional. Cuídate primero."
+
+        # Paso 6: Determinación de Estado Final
+        if final_score >= 75:
+            status = "CRITICAL"
+            self.memory.scams_stopped += 1
+        elif final_score >= 25:
+            status = "WARNING"
+        elif final_score > 0:
+            status = "CAUTION"
+        elif is_social:
+            status = "SOCIAL"
+        else:
+            status = "SAFE"
+
+        return {
+            "status": status,
+            "score": final_score,
+            "threats": list(set(detected_threats)), # Eliminar duplicados
+            "report": detailed_report,
+            "human_msg": social_response
+        }
+
+# ==============================================================================
+# 6. INTERFAZ GRÁFICA DE USUARIO (FRONTEND)
+# ==============================================================================
+
+# Inicialización de Estados de Sesión
+if "brain" not in st.session_state:
+    st.session_state.brain = OianOmniscientBrain()
+if "chat_history" not in st.session_state:
+    st.session_state.chat_history = []
+
+# --- SIDEBAR: CENTRO DE MANDO ---
+with st.sidebar:
+    st.title("👁️ OIAN V12")
+    st.caption("OMNISCIENT ARCHITECT")
+    st.markdown("---")
+    
+    # Panel de Estado de Memoria
+    st.markdown("### 💾 ESTADO DE MEMORIA")
+    
+    # Nombre del Usuario
+    if st.session_state.memory_core.user_name:
+        st.success(f"IDENTIDAD: {st.session_state.memory_core.user_name.upper()}")
+    else:
+        st.warning("IDENTIDAD: DESCONOCIDA")
+        st.caption("Tip: Escribe 'Me llamo Carlos' para registrarte.")
+        
+    # Estadísticas
+    col1, col2 = st.columns(2)
+    with col1:
+        st.metric("Amenazas", st.session_state.memory_core.scams_stopped)
+    with col2:
+        rules_count = len(st.session_state.memory_core.learned_knowledge)
+        st.metric("Reglas Nuevas", rules_count)
+    
+    # Lista de Aprendizaje
+    if rules_count > 0:
+        with st.expander("Ver Conocimiento Adquirido"):
+            for k in st.session_state.memory_core.learned_knowledge:
+                clean_name = st.session_state.memory_core.learned_knowledge[k]['regex'].replace('\\', '')
+                st.code(f"🚫 {clean_name}")
+
+    st.markdown("---")
+    if st.button("🗑️ FORMATEAR SISTEMA"):
+        st.session_state.chat_history = []
+        # Reiniciamos la memoria completamente
+        st.session_state.memory_core = MemoryCore()
+        st.rerun()
+
+# --- ÁREA DE CHAT PRINCIPAL ---
+st.title("🛡️ SISTEMA DE DEFENSA EVOLUTIVO")
+st.markdown("""
+<div style='background-color:rgba(0,0,0,0.2); padding:10px; border-radius:10px; border-left: 4px solid #3b82f6; margin-bottom:20px;'>
+    <strong>INSTRUCCIONES DE COMANDO:</strong><br>
+    1. Para análisis: Pega el mensaje sospechoso.<br>
+    2. Para identidad: Escribe <em>"Me llamo [Nombre]"</em>.<br>
+    3. Para enseñar: Escribe <em>"Aprende que [Palabra] es estafa"</em>.
+</div>
+""", unsafe_allow_html=True)
+
+# Renderizado del Historial
+for msg in st.session_state.chat_history:
+    with st.chat_message(msg["role"], avatar=msg["avatar"]):
+        st.markdown(msg["content"], unsafe_allow_html=True)
+
+# Input del Usuario
+user_input = st.chat_input("Ingresa datos para procesamiento neuronal...")
+
+if user_input:
+    # 1. Mostrar input usuario
+    st.session_state.chat_history.append({"role": "user", "avatar": "👤", "content": user_input})
+    with st.chat_message("user", avatar="👤"):
+        st.write(user_input)
+
+    # 2. Procesamiento IA
+    with st.chat_message("assistant", avatar="👁️"):
+        # Animación de "Pensando"
+        with st.status("🧠 Accediendo a sinapsis neuronales...", expanded=False) as status:
+            time.sleep(0.3)
+            st.write("🔍 Normalizando texto y rompiendo encriptación...")
+            time.sleep(0.2)
+            st.write("📂 Consultando base de datos estática...")
+            time.sleep(0.2)
+            st.write("💾 Verificando memoria aprendida...")
+            status.update(label="Análisis Completado", state="complete")
+
+        # Ejecución del Cerebro
+        result = st.session_state.brain.analyze_message(user_input)
+        
+        # 3. GENERACIÓN DE RESPUESTA VISUAL (HTML/CSS)
+        html_content = ""
+        
+        # --- CASO 1: APRENDIZAJE DE SISTEMA (PÚRPURA) ---
+        if result["status"] == "SYSTEM":
+            html_content = f"""
+            <div class="system-box">
+                <h2 class="card-title">💾 ACTUALIZACIÓN DE SISTEMA</h2>
+                <p class="card-text">{result['system_msg']}</p>
+                <p class="card-text"><i>{result['sub_msg']}</i></p>
+            </div>
+            """
+            
+        # --- CASO 2: AMENAZA CRÍTICA (ROJO PULSANTE) ---
+        elif result["status"] == "CRITICAL":
+            threats_str = ", ".join([f"<span class='highlight-threat'>{t}</span>" for t in result['threats']])
+            
+            # Extraemos el consejo más importante (el del primer reporte)
+            main_advice = result['report'][0]['consejo'] if result['report'] else "Bloquea al usuario."
+            
+            html_content = f"""
+            <div class="threat-box-critical">
+                <h2 class="card-title">🚨 AMENAZA CRÍTICA ({result['score']}%)</h2>
+                <p class="card-text"><strong>ANÁLISIS:</strong> El mensaje contiene patrones de ataque confirmados.</p>
+                <p class="card-text"><strong>VECTORES DETECTADOS:</strong> {threats_str}</p>
+                <hr style="border-color: rgba(255,255,255,0.3);">
+                <p class="card-text" style="font-size: 18px; font-weight:bold;">🛡️ PROTOCOLO DE ACCIÓN: {main_advice}</p>
+            </div>
+            """
+            
+        # --- CASO 3: ADVERTENCIA (ÁMBAR) ---
+        elif result["status"] == "WARNING" or result["status"] == "CAUTION":
+            threats_str = ", ".join(result['threats'])
+            html_content = f"""
+            <div class="threat-box-warning">
+                <h2 class="card-title">⚠️ ALERTA DE SEGURIDAD ({result['score']}%)</h2>
+                <p class="card-text">Se han detectado elementos sospechosos.</p>
+                <p class="card-text"><strong>PATRONES:</strong> {threats_str}</p>
+                <hr style="border-color: rgba(255,255,255,0.3);">
+                <p class="card-text">No realices ninguna acción precipitada. Verifica la fuente.</p>
+            </div>
+            """
+            
+        # --- CASO 4: ERROR IDIOMA ---
+        elif result["status"] == "ERROR_IDIOMA":
+            html_content = f"""
+            <div class="threat-box-warning">
+                <h2 class="card-title">🇺🇸 IDIOMA DETECTADO</h2>
+                <p class="card-text">{result['msg']}</p>
+            </div>
+            """
+            
+        # --- CASO 5: SOCIAL (AZUL) ---
+        elif result["status"] == "SOCIAL":
+            html_content = f"""
+            <div class="social-box">
+                <h2 class="card-title">💬 ENLACE SOCIAL ESTABLECIDO</h2>
+                <p class="card-text">{result['human_msg']}</p>
+            </div>
+            """
+            
+        # --- CASO 6: SEGURO (VERDE) ---
+        else: # SAFE
+            # Mensaje personalizado si sabemos el nombre
+            safe_msg = "El escaneo heurístico no encontró amenazas conocidas en mis bases de datos."
+            
+            html_content = f"""
+            <div class="safe-box">
+                <h2 class="card-title">✅ ANÁLISIS SEGURO (0%)</h2>
+                <p class="card-text">{safe_msg}</p>
+                <br>
+                <p style="font-size:12px; opacity:0.8;"><i>Nota: Si crees que me equivoqué, enséñame escribiendo: "Aprende que [palabra] es estafa".</i></p>
+            </div>
+            """
+
+        # Renderizar HTML final
+        st.markdown(html_content, unsafe_allow_html=True)
+        
+        # Guardar en historial
+        st.session_state.chat_history.append({"role": "assistant", "avatar": "👁️", "content": html_content})
